@@ -19,7 +19,7 @@ TDB
 
 * `VERSION_FROM` = version from
 * `VERSION_TO` = version to
-* `ENV` - traget enviroment name
+* `ENV` - target environment name
 * `DEVEL` - true/false. Set mustache context variable `isDevelopmentBuild`.
 
 ## Volumes

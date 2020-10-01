@@ -25,7 +25,7 @@ async function main() {
 
 	const configFile = path.normalize(path.join(process.cwd(), "database.config"));
 	const configuration = createConfiguration(fs.existsSync(configFile) ? configFile : null, appOpts.envConfigurationFile, mainLogger.getLogger("config-loader"));
-	const configurationProxy = createConfigurationProxy(configuration);
+	const configurationProxy = configuration !== null ? createConfigurationProxy(configuration) : Object.freeze({});
 
 	mainLogger.info("Loading migration scripts...");
 	const loadOpts = {};
@@ -115,9 +115,13 @@ function createConfiguration(configFile, envConfigurationFile, logger) {
 		configs.push(fileConfiguration(configFile));
 	}
 
-	const finalConfig = chainConfiguration(...configs).getConfiguration("database");
+	const finalConfig = chainConfiguration(...configs);
 
-	return finalConfig;
+	if (!finalConfig.has("database")) {
+		return null;
+	}
+
+	return finalConfig.getConfiguration("database");
 }
 
 function createConfigurationProxy(finalConfig) {
