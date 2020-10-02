@@ -117,7 +117,7 @@ function createConfiguration(configFile, envConfigurationFile, logger) {
 
 	const finalConfig = chainConfiguration(...configs);
 
-	if (!finalConfig.has("database")) {
+	if (!finalConfig.hasNamespace("database")) {
 		return null;
 	}
 
