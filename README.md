@@ -7,7 +7,7 @@
 
 # Migration Builder
 
-TBD
+*Migration Builder* - is a processor of [Mustache](https://mustache.github.io/) based SQL script templates.
 
 # Image reason
 
