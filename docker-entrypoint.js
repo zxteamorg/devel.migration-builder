@@ -182,7 +182,7 @@ function parseArgs() {
 	}
 
 	if (process.env["ENV"]) {
-		envConfigurationFile = env ? path.normalize(path.join(process.cwd(), `database-${process.env["ENV"]}.config`)) : null;
+		envConfigurationFile = process.env["ENV"] ? path.normalize(path.join(process.cwd(), `database-${process.env["ENV"]}.config`)) : null;
 	}
 
 	if (process.env["DEVEL"] === "true") {
