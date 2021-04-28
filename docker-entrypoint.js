@@ -51,13 +51,22 @@ async function main() {
 	const transformedSources = migrationSources.map(
 		(content, opts) => {
 			mainLogger.info(`[${opts.versionName}] ${opts.itemName}`);
-			return Mustache.render(content, {
+
+			const renderContext = {
 				direction: opts.direction, // install/rollback
 				version: opts.versionName,
 				file: opts.itemName,
 				database: configurationProxy,
 				isDevelopmentBuild: appOpts.isDevelopmentBuild
-			});
+			};
+
+			if (appOpts.envName !== null) {
+				const capitalizeEnvName = capitalize(appOpts.envName);
+				const envFlagName = `isEnvironment${capitalizeEnvName}`;
+				renderContext[envFlagName] = true;
+			}
+
+			return Mustache.render(content, renderContext);
 		}
 	);
 
@@ -168,6 +177,7 @@ function createConfigurationProxy(finalConfig) {
 }
 
 function parseArgs() {
+	let envName = null;
 	let envConfigurationFile = null;
 	let isDevelopmentBuild = false;
 	let versionFrom = null;
@@ -182,7 +192,8 @@ function parseArgs() {
 	}
 
 	if (process.env["ENV"]) {
-		envConfigurationFile = process.env["ENV"] ? path.normalize(path.join(process.cwd(), `database-${process.env["ENV"]}.config`)) : null;
+		envName = process.env["ENV"];
+		envConfigurationFile = path.normalize(path.join(process.cwd(), `database-${envName}.config`));
 	}
 
 	if (process.env["DEVEL"] === "true") {
@@ -190,9 +201,25 @@ function parseArgs() {
 	}
 
 	return Object.freeze({
+		envName,
 		envConfigurationFile,
 		isDevelopmentBuild,
 		versionFrom,
 		versionTo
 	});
 }
+
+/**
+ * https://stackoverflow.com/questions/2332811/capitalize-words-in-string
+ * Capitalizes first letters of words in string.
+ * @param {string} str String to be modified
+ * @param {boolean=false} lower Whether all other letters should be lowercased
+ * @return {string}
+ * @usage
+ *   capitalize('fix this string');     // -> 'Fix This String'
+ *   capitalize('javaSCrIPT');          // -> 'JavaSCrIPT'
+ *   capitalize('javaSCrIPT', true);    // -> 'Javascript'
+ */
+const capitalize = (str, lower = false) =>
+	(lower ? str.toLowerCase() : str).replace(/(?:^|\s|["'([{])+\S/g, match => match.toUpperCase());
+;

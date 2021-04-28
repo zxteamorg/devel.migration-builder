@@ -22,6 +22,28 @@ TDB
 * `ENV` - target environment name
 * `DEVEL` - true/false. Set mustache context variable `isDevelopmentBuild`.
 
+## Environment Zone Flag
+
+Render context provides capitalized environment zone flag in format: `isEnvironment<$ENV>`.
+
+Examples:
+* ENV=production gives `isEnvironmentProduction: true`
+* ENV=test gives `isEnvironmentTest: true`
+
+So you can use something like this:
+
+```sql
+--
+-- EMULATOR kind will be produced only for non-production environments
+--
+CREATE TYPE "public"."SERVICE_KIND" AS ENUM (
+{{^isEnvironmentProduction}}
+	'EMULATOR',
+{{/isEnvironmentProduction}}
+	'WEBSOCKET'
+);
+```
+
 ## Volumes
 
 * `/data` - Root your database work directory
