@@ -66,7 +66,7 @@ async function main() {
 
 			if (appOpts.envName !== null) {
 				const capitalizeEnvName = capitalize(appOpts.envName);
-				const envFlagName = `isBuildZone${capitalizeEnvName}`;
+				const envFlagName = `isEnvironment${capitalizeEnvName}`;
 				renderContext[envFlagName] = true;
 			}
 
@@ -173,16 +173,27 @@ function createConfigurationProxy(finalConfig) {
 
 	const objectConfig = keyWalker(finalConfig.keys, finalConfig);
 
-	const proxyConfig = new Proxy(objectConfig, {
-		get(_, propery) {
-			if (typeof propery === "string") {
-				if (propery in objectConfig) {
-					return objectConfig[propery];
+	function makeProxyAdapter(ns, obj) {
+		return new Proxy(obj, {
+			get(_, propery) {
+				if (typeof propery === "string") {
+					if (propery in obj) {
+						const value = obj[propery];
+						if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+							return value;
+						} else {
+							return makeProxyAdapter([...ns, propery], value);
+						}
+					}
+					const fullProperty = [...ns, propery].join(".");
+					throw new InvalidOperationError(`Non-existing property request '${fullProperty}'.`);
 				}
-				throw new InvalidOperationError(`Non-existing property request '${propery}'.`);
 			}
-		}
-	});
+		});
+	}
+
+	const proxyConfig = makeProxyAdapter([], objectConfig);
+
 
 	return proxyConfig;
 }
