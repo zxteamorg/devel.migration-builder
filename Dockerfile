@@ -8,6 +8,8 @@ ENV VERSION_FROM=
 ENV VERSION_TO=
 ENV ENV=
 ENV DEVEL=false
+ENV SOURCE_PATH="updates"
+ENV BUILD_PATH=".dist"
 COPY --from=Builder /build/ /
 VOLUME [ "/data" ]
 WORKDIR /data

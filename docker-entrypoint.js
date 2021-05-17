@@ -33,11 +33,11 @@ async function main() {
 	if (appOpts.versionTo !== null) { loadOpts.versionTo = appOpts.versionTo; }
 	const migrationSources = await MigrationSources.loadFromFilesystem(
 		DUMMY_CANCELLATION_TOKEN,
-		path.normalize(path.join(process.cwd(), "updates")),
+		path.normalize(path.join(process.cwd(), appOpts.sourceDir)),
 		loadOpts
 	);
 
-	const destinationDirectory = path.normalize(path.join(process.cwd(), ".dist"));
+	const destinationDirectory = path.normalize(path.join(process.cwd(), appOpts.buildDir));
 	if (fs.existsSync(destinationDirectory)) {
 		mainLogger.info(`Cleaning target directory ${destinationDirectory}...`);
 		deleteDirectoryRecursiveSync(destinationDirectory, false);
@@ -182,6 +182,8 @@ function parseArgs() {
 	let isDevelopmentBuild = false;
 	let versionFrom = null;
 	let versionTo = null;
+	let sourceDir = "updates";
+	let buildDir = ".dist";
 
 	if (process.env["VERSION_FROM"]) {
 		versionFrom = process.env["VERSION_FROM"];
@@ -200,12 +202,22 @@ function parseArgs() {
 		isDevelopmentBuild = true;
 	}
 
+	if (process.env["SOURCE_PATH"]) {
+		sourceDir = process.env["SOURCE_PATH"];
+	}
+
+	if (process.env["BUILD_PATH"]) {
+		buildDir = process.env["BUILD_PATH"];
+	}
+
 	return Object.freeze({
 		envName,
 		envConfigurationFile,
 		isDevelopmentBuild,
 		versionFrom,
-		versionTo
+		versionTo,
+		sourceDir,
+		buildDir
 	});
 }
 

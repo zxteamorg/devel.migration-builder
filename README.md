@@ -21,6 +21,9 @@ TDB
 * `VERSION_TO` = version to
 * `ENV` - target environment name
 * `DEVEL` - true/false. Set mustache context variable `isDevelopmentBuild`.
+* `SOURCE_PATH` - Set relative path to soruces. Default: 'updates'.
+* `BUILD_PATH` - Set relative path to buid artifacts. Default: '.dist'.
+
 
 ## Environment Zone Flag
 
