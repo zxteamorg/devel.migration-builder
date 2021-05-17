@@ -4,12 +4,12 @@ RUN npm install --production --no-save @zxteam/cancellation @zxteam/configuratio
 COPY docker-entrypoint.js /build/usr/local/bin/docker-entrypoint.js
 
 FROM node:12-alpine
-ENV VERSION_FROM=
-ENV VERSION_TO=
-ENV ENV=
-ENV DEVEL=false
+ENV VERSION_FROM=""
+ENV VERSION_TO=""
+ENV ENV=""
 ENV SOURCE_PATH="updates"
 ENV BUILD_PATH=".dist"
+ENV EXTRA_CONFIGS=""
 COPY --from=Builder /build/ /
 VOLUME [ "/data" ]
 WORKDIR /data

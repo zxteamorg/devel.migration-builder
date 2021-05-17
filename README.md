@@ -17,21 +17,25 @@ TDB
 
 ## Environment variables
 
-* `VERSION_FROM` = version from
-* `VERSION_TO` = version to
-* `ENV` - target environment name
-* `DEVEL` - true/false. Set mustache context variable `isDevelopmentBuild`.
-* `SOURCE_PATH` - Set relative path to soruces. Default: 'updates'.
-* `BUILD_PATH` - Set relative path to buid artifacts. Default: '.dist'.
+* `VERSION_FROM` - version from. Default: '',
+* `VERSION_TO` - version to. Default: ''.
+* `ENV` - a name of target build environment, like: `devel`, `test`, `production`. Default: ''.
+* `SOURCE_PATH` - relative path to sources. Default: 'updates'.
+* `BUILD_PATH` - relative path to buid artifacts. Default: '.dist'.
+* `EXTRA_CONFIGS` - comma-separated list of additional configuration files (relative to `/data` directory). Default: ''.
 
 
-## Environment Zone Flag
+## ENV Zone Flag
 
-Render context provides capitalized environment zone flag in format: `isEnvironment<$ENV>`.
+ENV make some magic:
+
+* Render context provides capitalized environment zone flag in format: `isEnvironment${capitalized(ENV)}`
+* Use configuratoion file `database-{$ENV}.config`
 
 Examples:
-* ENV=production gives `isEnvironmentProduction: true`
-* ENV=test gives `isEnvironmentTest: true`
+* ENV=production gives `isEnvironmentProduction: true` + read database-production.config
+* ENV=test gives `isEnvironmentTest: true` + read database-test.config
+* ENV=devel gives `isEnvironmentDevel: true` + read database-devel.config
 
 So you can use something like this:
 

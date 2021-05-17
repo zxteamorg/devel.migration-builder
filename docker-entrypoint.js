@@ -24,7 +24,12 @@ async function main() {
 	const mainLogger = rootLogger.getLogger("main");
 
 	const configFile = path.normalize(path.join(process.cwd(), "database.config"));
-	const configuration = createConfiguration(fs.existsSync(configFile) ? configFile : null, appOpts.envConfigurationFile, mainLogger.getLogger("config-loader"));
+	const configuration = createConfiguration(
+		fs.existsSync(configFile) ? configFile : null,
+		appOpts.envConfigurationFile,
+		appOpts.extraConfigFiles,
+		mainLogger.getLogger("config-loader")
+	);
 	const configurationProxy = configuration !== null ? createConfigurationProxy(configuration) : Object.freeze({});
 
 	mainLogger.info("Loading migration scripts...");
@@ -56,13 +61,12 @@ async function main() {
 				direction: opts.direction, // install/rollback
 				version: opts.versionName,
 				file: opts.itemName,
-				database: configurationProxy,
-				isDevelopmentBuild: appOpts.isDevelopmentBuild
+				database: configurationProxy
 			};
 
 			if (appOpts.envName !== null) {
 				const capitalizeEnvName = capitalize(appOpts.envName);
-				const envFlagName = `isEnvironment${capitalizeEnvName}`;
+				const envFlagName = `isBuildZone${capitalizeEnvName}`;
 				renderContext[envFlagName] = true;
 			}
 
@@ -108,11 +112,18 @@ function deleteDirectoryRecursiveSync(directory, isRemoveItself = true) {
 	}
 }
 
-function createConfiguration(configFile, envConfigurationFile, logger) {
+function createConfiguration(configFile, envConfigurationFile, extraConfigFiles, logger) {
 	const configs = [];
 
 	logger.info(`Loading configuration environment variables...`);
 	configs.push(envConfiguration());
+
+	if (extraConfigFiles !== null) {
+		for (const extraConfigFile of extraConfigFiles) {
+			logger.info(`Loading configuration from file ${extraConfigFile}...`);
+			configs.push(fileConfiguration(extraConfigFile));
+		}
+	}
 
 	if (envConfigurationFile !== null) {
 		logger.info(`Loading configuration from file ${envConfigurationFile}...`);
@@ -179,11 +190,11 @@ function createConfigurationProxy(finalConfig) {
 function parseArgs() {
 	let envName = null;
 	let envConfigurationFile = null;
-	let isDevelopmentBuild = false;
 	let versionFrom = null;
 	let versionTo = null;
 	let sourceDir = "updates";
 	let buildDir = ".dist";
+	let extraConfigFiles = [];
 
 	if (process.env["VERSION_FROM"]) {
 		versionFrom = process.env["VERSION_FROM"];
@@ -198,10 +209,6 @@ function parseArgs() {
 		envConfigurationFile = path.normalize(path.join(process.cwd(), `database-${envName}.config`));
 	}
 
-	if (process.env["DEVEL"] === "true") {
-		isDevelopmentBuild = true;
-	}
-
 	if (process.env["SOURCE_PATH"]) {
 		sourceDir = process.env["SOURCE_PATH"];
 	}
@@ -210,14 +217,20 @@ function parseArgs() {
 		buildDir = process.env["BUILD_PATH"];
 	}
 
+	if (process.env["EXTRA_CONFIGS"]) {
+		const extraConfigsValue = process.env["EXTRA_CONFIGS"];
+		extraConfigFiles = extraConfigsValue.split(",");
+	}
+
+
 	return Object.freeze({
 		envName,
 		envConfigurationFile,
-		isDevelopmentBuild,
 		versionFrom,
 		versionTo,
 		sourceDir,
-		buildDir
+		buildDir,
+		extraConfigFiles
 	});
 }
 
